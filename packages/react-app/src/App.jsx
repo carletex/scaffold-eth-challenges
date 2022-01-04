@@ -265,11 +265,13 @@ function App(props) {
       const collectibleUpdate = [];
       for (let tokenIndex = 0; tokenIndex < balance; tokenIndex++) {
         try {
-          console.log("GEtting token index", tokenIndex);
+          console.log("Getting token index", tokenIndex);
           const tokenId = await readContracts.YourCollectible.tokenOfOwnerByIndex(address, tokenIndex);
           console.log("tokenId", tokenId);
           const tokenURI = await readContracts.YourCollectible.tokenURI(tokenId);
           console.log("tokenURI", tokenURI);
+          const tokenTraits = await readContracts.YourCollectible.getTokenTraits(tokenId);
+          console.log("tokenTraits", tokenTraits);
 
           const ipfsHash = tokenURI.replace("https://ipfs.io/ipfs/", "");
           console.log("ipfsHash", ipfsHash);
@@ -279,7 +281,13 @@ function App(props) {
           try {
             const jsonManifest = JSON.parse(jsonManifestBuffer.toString());
             console.log("jsonManifest", jsonManifest);
-            collectibleUpdate.push({ id: tokenId, uri: tokenURI, owner: address, ...jsonManifest });
+            collectibleUpdate.push({
+              id: tokenId,
+              uri: tokenURI,
+              owner: address,
+              ...jsonManifest,
+              isSheep: tokenTraits.isSheep,
+            });
           } catch (e) {
             console.log(e);
           }
@@ -722,17 +730,10 @@ function App(props) {
                   const id = item.id.toNumber();
                   return (
                     <List.Item key={id + "_" + item.uri + "_" + item.owner}>
-                      <Card
-                        title={
-                          <div>
-                            <span style={{ fontSize: 16, marginRight: 8 }}>#{id}</span> {item.name}
-                          </div>
-                        }
-                      >
+                      <Card>
                         <div>
-                          <img src={item.image} style={{ maxWidth: 150 }} />
+                          <img src={item.isSheep ? "./img/sheep.png" : "./img/wolf.png"} />
                         </div>
-                        <div>{item.description}</div>
                       </Card>
 
                       <div>
